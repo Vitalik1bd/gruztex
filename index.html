@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ГрузТех | Почасовая аренда спецтехники</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш-ключ-здесь&lang=ru_RU" type="text/javascript"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-gradient: linear-gradient(145deg, #f0f5fa 0%, #e9edf2 100%);
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --card-blur: blur(8px);
+            --text-primary: #1a2639;
+            --text-secondary: #2c3e50;
+            --accent-light: #6c5ce7;
+            --accent-dark: #a463f5;
+            --btn-gradient: linear-gradient(135deg, #6c5ce7, #a463f5);
+            --btn-shadow: 0 15px 25px -8px rgba(108, 92, 231, 0.4);
+            --border-light: rgba(255, 255, 255, 0.5);
+            --footer-bg: #1e2b3a;
+            --footer-text: #e2e8f0;
+            --header-bg: rgba(255, 255, 255, 0.3);
+            --danger: #ff4d6d;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --modal-bg: rgba(0, 0, 0, 0.7);
+        }
+
+        body.dark-theme {
+            --bg-gradient: linear-gradient(145deg, #0b0f17 0%, #1a1f2e 100%);
+            --card-bg: rgba(25, 30, 40, 0.85);
+            --card-blur: blur(12px);
+            --text-primary: #f0f4fa;
+            --text-secondary: #cbd5e1;
+            --accent-light: #a78bfa;
+            --accent-dark: #c4b5fd;
+            --btn-gradient: linear-gradient(135deg, #8b5cf6, #c084fc);
+            --btn-shadow: 0 15px 25px -8px rgba(139, 92, 246, 0.5);
+            --border-light: rgba(255, 255, 255, 0.1);
+            --footer-bg: #0e121c;
+            --footer-text: #b0c4de;
+            --header-bg: rgba(20, 25, 40, 0.5);
+        }
+
+        body.accessible-mode {
+            font-size: 18px;
+        }
+        body.accessible-mode .nav-btn,
+        body.accessible-mode .theme-btn,
+        body.accessible-mode .btn-primary,
+        body.accessible-mode .product-name,
+        body.accessible-mode .product-price {
+            font-size: 1.1rem;
+        }
+        body.accessible-mode .glass-card {
+            backdrop-filter: blur(4px);
+            background: var(--card-bg);
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--header-bg);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 25px;
+            width: 100%;
+        }
+
+        .header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.2s ease;
+        }
+        .logo-btn:hover {
+            transform: scale(1.02);
+        }
+        .logo {
+            font-size: 1.9rem;
+            font-weight: 800;
+            background: var(--btn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo i {
+            color: var(--accent-light);
+            margin-right: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+        }
+
+        .nav-btn:hover {
+            background: var(--card-bg);
+            border-color: var(--border-light);
+            color: var(--accent-light);
+            transform: translateY(-3px);
+        }
+
+        .nav-btn.active-nav {
+            background: var(--btn-gradient);
+            color: white;
+        }
+
+        .theme-btn, .accessibility-btn {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-light);
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-indicator {
+            position: relative;
+        }
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-btn:hover, .accessibility-btn:hover {
+            background: var(--btn-gradient);
+            color: white;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 50px;
+            padding: 12px 20px;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            padding: 80px 20px 20px;
+            border-right: 1px solid var(--border-light);
+        }
+
+        .mobile-drawer.open {
+            left: 0;
+        }
+
+        .mobile-drawer .nav-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .drawer-overlay.open {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links .nav-btn:not(.theme-btn):not(.accessibility-btn) {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: inline-flex;
+            }
+            .hero-content h2 {
+                font-size: 1.5rem;
+            }
+            .hero-content p {
+                font-size: 0.9rem;
+            }
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border: 1px solid var(--border-light);
+            border-radius: 40px;
+            box-shadow: 0 25px 40px -18px rgba(0, 0, 0, 0.3);
+            transition: 0.2s;
+            padding: 25px;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, #1a2639, #0f172a);
+            min-height: 300px;
+            border-radius: 40px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .hero-content {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+        }
+        .hero-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 768px) {
+            .hero-banner { min-height: 250px; }
+            .hero-content { padding: 30px 20px; }
+            .hero-content h2 { font-size: 1.8rem; }
+            .hero-content p { font-size: 1rem; }
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 40px 0 30px;
+            background: var(--btn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .catalog-row {
+            display: flex;
+            gap: 25px;
+            overflow-x: auto;
+            padding: 20px 0 30px;
+            scrollbar-width: thin;
+        }
+
+        .catalog-row::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .product-item {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border: 1px solid var(--border-light);
+            border-radius: 40px;
+            padding: 25px;
+            min-width: 280px;
+            max-width: 280px;
+            transition: 0.15s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px -10px var(--accent-light);
+        }
+
+        .product-emoji {
+            font-size: 4.2rem;
+            background: rgba(255, 255, 255, 0.2);
+            width: fit-content;
+            padding: 15px 20px;
+            border-radius: 80px;
+            margin-bottom: 15px;
+        }
+
+        .product-name {
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+
+        .product-desc {
+            color: var(--text-secondary);
+            margin: 10px 0;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--btn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 15px 0;
+        }
+
+        .btn-primary {
+            background: var(--btn-gradient);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--btn-shadow);
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 35px -8px var(--accent-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .cart-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .cart-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .cart-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cart-items {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 40px;
+            padding: 25px;
+            border: 1px solid var(--border-light);
+        }
+
+        .cart-item-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .hours-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 40px;
+            padding: 5px 15px;
+        }
+
+        .hours-control button {
+            background: none;
+            border: none;
+            color: var(--accent-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+        }
+
+        .cart-summary {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 40px;
+            padding: 30px;
+            border: 1px solid var(--border-light);
+            height: fit-content;
+        }
+
+        .summary-total {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-light);
+            border-top: 2px solid var(--border-light);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .auth-glass {
+            max-width: 440px;
+            margin: 40px auto;
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 60px;
+            padding: 45px;
+            border: 1px solid var(--border-light);
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 18px 22px;
+            border-radius: 50px;
+            border: 1px solid var(--border-light);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            color: var(--text-primary);
+            margin: 12px 0;
+        }
+
+        .date-input, .time-input {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 40px;
+            padding: 10px 15px;
+            color: var(--text-primary);
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .map-container {
+            margin: 30px 0;
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 40px;
+            overflow: hidden;
+        }
+
+        footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 30px 0;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active-section {
+            display: block;
+        }
+
+        .team-round {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 35px;
+            margin: 40px 0;
+        }
+
+        .member {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 40px;
+            padding: 35px 25px;
+            text-align: center;
+            flex: 1 1 150px;
+            border: 1px solid var(--border-light);
+        }
+
+        /* Modal styles */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 40px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            animation: fadeInScale 0.2s ease;
+            position: relative;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--accent-light);
+            margin-bottom: 15px;
+        }
+        .modal-content p {
+            margin: 15px 0 25px;
+            font-size: 1.1rem;
+        }
+        .modal-btn {
+            background: var(--btn-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Стили для модального окна ввода */
+        .input-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 30px;
+            border: 1px solid var(--border-light);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            padding: 10px 25px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .modal-buttons .confirm-btn {
+            background: var(--btn-gradient);
+            color: white;
+        }
+        .modal-buttons .cancel-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+        
+        /* Всплывающая ошибка поверх модального окна */
+        .error-overlay-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            z-index: 2100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .error-overlay-modal .modal-content {
+            max-width: 350px;
+        }
+        
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            padding: 20px;
+            text-align: center;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .admin-table th, .admin-table td {
+            border: 1px solid var(--border-light);
+            padding: 12px;
+            text-align: left;
+        }
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .calendar-table th, .calendar-table td {
+            border: 1px solid var(--border-light);
+            padding: 10px;
+            text-align: center;
+        }
+        .remember-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-flex">
+            <button class="logo-btn" id="logoHomeBtn">
+                <div class="logo"><i class="fas fa-truck-ramp-box"></i> ГРУЗТЕХ</div>
+            </button>
+            <nav class="nav-links" id="mainNav">
+                <button class="nav-btn" data-page="home"><i class="fas fa-home"></i>Главная</button>
+                <button class="nav-btn" data-page="catalog"><i class="fas fa-list"></i>Каталог</button>
+                <button class="nav-btn cart-indicator" data-page="cart" id="cartNavBtn"><i class="fas fa-shopping-cart"></i>Корзина<span id="cartCountBadge" class="cart-count" style="display: none;">0</span></button>
+                <button class="nav-btn" data-page="about"><i class="fas fa-info-circle"></i>О нас</button>
+                <button class="nav-btn" data-page="login" id="loginBtn"><i class="fas fa-sign-in-alt"></i>Вход</button>
+                <button class="nav-btn" data-page="register" id="registerBtn"><i class="fas fa-user-plus"></i>Регистрация</button>
+                <button class="nav-btn" data-page="profile" id="profileBtn" style="display: none;"><i class="fas fa-user-circle"></i>Кабинет</button>
+                <button class="nav-btn" data-page="admin" id="adminBtn" style="display: none;"><i class="fas fa-cog"></i>Админ</button>
+                <button class="nav-btn" id="logoutBtn" style="display: none;"><i class="fas fa-sign-out-alt"></i>Выйти</button>
+                <button class="accessibility-btn" id="accessibilityToggle"><i class="fas fa-eye"></i> A+</button>
+                <button class="theme-btn" id="themeToggle"><i class="fas fa-moon"></i> Тема</button>
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i> Меню</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="mobile-drawer" id="mobileDrawer">
+        <button class="nav-btn" data-page="home"><i class="fas fa-home"></i>Главная</button>
+        <button class="nav-btn" data-page="catalog"><i class="fas fa-list"></i>Каталог</button>
+        <button class="nav-btn" data-page="cart"><i class="fas fa-shopping-cart"></i>Корзина</button>
+        <button class="nav-btn" data-page="about"><i class="fas fa-info-circle"></i>О нас</button>
+        <button class="nav-btn" data-page="login" id="mobileLoginBtn">Вход</button>
+        <button class="nav-btn" data-page="register" id="mobileRegisterBtn">Регистрация</button>
+        <button class="nav-btn" data-page="profile" id="mobileProfileBtn" style="display: none;">Кабинет</button>
+        <button class="nav-btn" data-page="admin" id="mobileAdminBtn" style="display: none;">Админ</button>
+        <button class="nav-btn" id="mobileLogoutBtn" style="display: none;">Выйти</button>
+    </div>
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+
+    <main class="main-content container">
+        <section id="home" class="page-section active-section">
+            <div class="hero-banner">
+                <div class="hero-content">
+                    <h2>Спецтехника для любых задач</h2>
+                    <p>Самосвалы | Экскаваторы | Автокраны | Бульдозеры</p>
+                    <button class="btn-primary" data-page="catalog"><i class="fas fa-arrow-right"></i> Выбрать технику</button>
+                </div>
+            </div>
+            <div class="glass-card" style="padding: 60px; text-align: center;">
+                <h1 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 20px;">Аренда спецтехники <span style="background: var(--btn-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">почасово</span></h1>
+                <p style="font-size: 1.3rem; margin-bottom: 30px; color: var(--text-secondary);">Платите только за часы работы. Минимальный заказ — 2 часа.</p>
+            </div>
+        </section>
+
+        <section id="catalog" class="page-section">
+            <h2 class="page-title">Каталог техники (₽/час)</h2>
+            <div class="catalog-row" id="catalogContainer"></div>
+            <div class="glass-card" style="margin-top: 40px;">
+                <h3><i class="fas fa-calendar-alt"></i> Календарь занятости техники</h3>
+                <div id="busyCalendarContainer"></div>
+            </div>
+        </section>
+
+        <section id="cart" class="page-section">
+            <h2 class="page-title">Корзина</h2>
+            <div class="cart-grid">
+                <div class="cart-row">
+                    <div class="cart-items" id="cartItemsContainer"></div>
+                    <div class="cart-summary">
+                        <h3 style="margin-bottom: 20px;">Детали заказа</h3>
+                        <div>Часов аренды: <span id="totalHours">0</span></div>
+                        <div>Минимальное время: 2 часа</div>
+                        <div class="summary-total" id="cartTotal">0 ₽</div>
+                    </div>
+                </div>
+                <button class="btn-primary" id="checkoutBtn" style="width: 100%;">
+                    <i class="fas fa-check-circle"></i> Оформить заявку
+                </button>
+            </div>
+        </section>
+
+        <section id="about" class="page-section">
+            <h2 class="page-title">О нас</h2>
+            <div class="glass-card" style="padding: 40px;">
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">ГрузТех — более 15 лет обеспечиваем техникой стройки и перевозки. Собственный парк, опытные водители, круглосуточная поддержка.</p>
+                <div style="margin: 30px 0;">
+                    <p><i class="fas fa-map-marker-alt" style="margin-right: 10px; color: var(--accent-light);"></i> г. Братск, Дмитровское шоссе 100</p>
+                    <p><i class="fas fa-phone-alt" style="margin-right: 10px; color: var(--accent-light);"></i> +7 (495) 999-99-99</p>
+                </div>
+                <h3 style="margin: 40px 0 20px;">Команда</h3>
+                <div class="team-round">
+                    <div class="member"><h4>Артем Лидеров</h4><p>CEO</p></div>
+                    <div class="member"><h4>Екатерина Профи</h4><p>Логист</p></div>
+                    <div class="member"><h4>Сергей Механик</h4><p>Главный инженер</p></div>
+                </div>
+            </div>
+            <div class="map-container glass-card" style="margin-top: 30px;">
+                <h3>Наше местоположение</h3>
+                <div id="map"></div>
+            </div>
+        </section>
+
+        <section id="login" class="page-section">
+            <div class="auth-glass">
+                <h2 style="font-size: 2rem; margin-bottom: 20px;">Вход</h2>
+                <input type="text" id="loginUsername" class="auth-input" placeholder="Логин">
+                <input type="password" id="loginPassword" class="auth-input" placeholder="Пароль">
+                <div class="remember-check">
+                    <input type="checkbox" id="rememberMeCheckbox"> <label>Запомнить меня</label>
+                </div>
+                <button class="btn-primary" style="width:100%;" id="doLoginBtn">Войти</button>
+                <p style="margin-top: 20px; text-align: center;">Нет аккаунта? <a href="#" id="goToRegister">Зарегистрироваться</a></p>
+            </div>
+        </section>
+
+        <section id="register" class="page-section">
+            <div class="auth-glass">
+                <h2 style="margin-bottom: 20px;">Регистрация</h2>
+                <input type="text" id="regName" class="auth-input" placeholder="Имя">
+                <input type="text" id="regUsername" class="auth-input" placeholder="Логин">
+                <input type="email" id="regEmail" class="auth-input" placeholder="Email">
+                <input type="password" id="regPassword" class="auth-input" placeholder="Пароль">
+                <input type="password" id="regConfirmPassword" class="auth-input" placeholder="Подтвердите пароль">
+                <button class="btn-primary" style="width:100%;" id="doRegisterBtn">Зарегистрироваться</button>
+                <p style="margin-top: 20px; text-align: center;">Уже есть аккаунт? <a href="#" id="goToLogin">Войти</a></p>
+            </div>
+        </section>
+
+        <section id="profile" class="page-section">
+            <h2 class="page-title">Личный кабинет</h2>
+            <div class="profile-grid">
+                <div class="glass-card">
+                    <div style="font-size: 5rem; text-align: center;"><i class="fas fa-user-circle"></i></div>
+                    <div id="profileDetails"></div>
+                </div>
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 20px;">История аренды</h3>
+                    <div id="orderHistory"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" class="page-section">
+            <h2 class="page-title">Админ-панель</h2>
+            <div class="glass-card" id="adminContent"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <span>© 2026 ГрузТех — аренда спецтехники</span>
+            <span><i class="fab fa-telegram"></i> <i class="fab fa-whatsapp"></i> +7 (495) 999-99-99</span>
+        </div>
+    </footer>
+
+    <!-- Модальное окно для уведомлений (требует нажатия OK) -->
+    <div id="customModal" class="custom-modal">
+        <div class="modal-content">
+            <i class="fas fa-info-circle"></i>
+            <p id="modalMessage"></p>
+            <button class="modal-btn" id="modalOkBtn">OK</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно для ввода данных сотрудника -->
+    <div id="employeeModal" class="custom-modal" style="display: none;">
+        <div class="modal-content">
+            <i class="fas fa-user-plus"></i>
+            <h3 style="margin-bottom: 15px;">Добавление сотрудника</h3>
+            <div class="input-group">
+                <label>ФИО сотрудника:</label>
+                <input type="text" id="empFullname" placeholder="Иванов Иван Иванович">
+            </div>
+            <div class="input-group">
+                <label>Должность:</label>
+                <input type="text" id="empPosition" placeholder="Инженер">
+            </div>
+            <div class="input-group">
+                <label>Телефон:</label>
+                <input type="text" id="empPhone" placeholder="+7 (999) 123-45-67">
+            </div>
+            <div class="input-group">
+                <label>Зарплата (руб):</label>
+                <input type="number" id="empSalary" placeholder="100000">
+            </div>
+            <div class="modal-buttons">
+                <button class="confirm-btn" id="confirmEmployeeBtn">OK</button>
+                <button class="cancel-btn" id="cancelEmployeeBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const items = [
+            { id: 1, name: 'Самосвал HOWO', desc: '10 м³, идеален для сыпучих', pricePerHour: 4500, emoji: '🚛', totalUnits: 5, busyUnits: 2 },
+            { id: 2, name: 'Экскаватор JCB', desc: 'Ковш 1.2 м³, глубина 5м', pricePerHour: 8200, emoji: '🚜', totalUnits: 3, busyUnits: 1 },
+            { id: 3, name: 'Автокран 25т', desc: 'Стрела 28 м, вылет 20 м', pricePerHour: 12000, emoji: '🏗️', totalUnits: 2, busyUnits: 1 },
+            { id: 4, name: 'Бульдозер ЧТЗ', desc: '240 л.с., рыхление', pricePerHour: 15000, emoji: '⛰️', totalUnits: 4, busyUnits: 0 }
+        ];
+
+        let orders = [];
+        let users = [
+            { id: 1, name: 'Администратор', username: 'admin', password: 'admin123', email: 'admin@gruztech.ru', role: 'admin', blocked: false },
+            { id: 2, name: 'Саня', username: 'sanya', password: '123', email: 'sanya@mail.ru', role: 'user', blocked: false }
+        ];
+        
+        let employees = [
+            { id: 1, fullname: 'Артем Лидеров', position: 'Генеральный директор', phone: '+7 (999) 111-22-33', salary: 250000 },
+            { id: 2, fullname: 'Екатерина Профи', position: 'Логист', phone: '+7 (999) 222-33-44', salary: 120000 },
+            { id: 3, fullname: 'Сергей Механик', position: 'Главный инженер', phone: '+7 (999) 333-44-55', salary: 150000 }
+        ];
+        
+        let currentUser = null;
+        let cart = [];
+        let mapInitialized = false;
+
+        function showModal(message, isError = false, onClose = null) {
+            const modal = document.getElementById('customModal');
+            const msgEl = document.getElementById('modalMessage');
+            const icon = modal.querySelector('i');
+            msgEl.textContent = message;
+            if (isError) {
+                icon.style.color = 'var(--danger)';
+                icon.className = 'fas fa-exclamation-triangle';
+            } else {
+                icon.style.color = 'var(--accent-light)';
+                icon.className = 'fas fa-check-circle';
+            }
+            modal.style.display = 'flex';
+            
+            const okBtn = document.getElementById('modalOkBtn');
+            const handleClose = () => {
+                modal.style.display = 'none';
+                okBtn.removeEventListener('click', handleClose);
+                if (onClose) onClose();
+            };
+            okBtn.addEventListener('click', handleClose);
+        }
+
+        function showErrorOverlay(message, parentModalId) {
+            // Создаем временное окно ошибки поверх текущего модального окна
+            const overlay = document.createElement('div');
+            overlay.className = 'error-overlay-modal';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                    <p>${message}</p>
+                    <button class="modal-btn" id="errorOverlayOkBtn">OK</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            const closeBtn = overlay.querySelector('#errorOverlayOkBtn');
+            const closeOverlay = () => overlay.remove();
+            closeBtn.addEventListener('click', closeOverlay);
+        }
+
+        function showEmployeeModal(onConfirm) {
+            const modal = document.getElementById('employeeModal');
+            const confirmBtn = document.getElementById('confirmEmployeeBtn');
+            const cancelBtn = document.getElementById('cancelEmployeeBtn');
+            
+            document.getElementById('empFullname').value = '';
+            document.getElementById('empPosition').value = '';
+            document.getElementById('empPhone').value = '';
+            document.getElementById('empSalary').value = '';
+            
+            modal.style.display = 'flex';
+            
+            const cleanup = () => {
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+            };
+            
+            const handleConfirm = () => {
+                const fullname = document.getElementById('empFullname').value.trim();
+                const position = document.getElementById('empPosition').value.trim();
+                const phone = document.getElementById('empPhone').value.trim();
+                const salary = parseInt(document.getElementById('empSalary').value);
+                
+                if (!fullname || !position || !phone || isNaN(salary)) {
+                    showErrorOverlay('Заполните все поля корректно', 'employeeModal');
+                    return;
+                }
+                
+                modal.style.display = 'none';
+                cleanup();
+                onConfirm({ fullname, position, phone, salary });
+            };
+            
+            const handleCancel = () => {
+                modal.style.display = 'none';
+                cleanup();
+            };
+            
+            confirmBtn.addEventListener('click', handleConfirm);
+            cancelBtn.addEventListener('click', handleCancel);
+        }
+
+        function syncBusyFromOrders() {
+            items.forEach(item => { item.busyUnits = 0; });
+            orders.forEach(order => {
+                if (order.status === 'Новый' || order.status === 'В обработке') {
+                    order.items.forEach(oi => {
+                        const item = items.find(i => i.id === oi.id);
+                        if (item) item.busyUnits++;
+                    });
+                }
+            });
+            items.forEach(item => { if (item.busyUnits > item.totalUnits) item.busyUnits = item.totalUnits; });
+        }
+
+        function saveAll() {
+            localStorage.setItem('gruztech_users', JSON.stringify(users));
+            localStorage.setItem('gruztech_orders', JSON.stringify(orders));
+            localStorage.setItem('gruztech_cart', JSON.stringify(cart));
+            localStorage.setItem('gruztech_employees', JSON.stringify(employees));
+            syncBusyFromOrders();
+        }
+
+        function loadData() {
+            const savedUsers = localStorage.getItem('gruztech_users'); if (savedUsers) users = JSON.parse(savedUsers);
+            const savedOrders = localStorage.getItem('gruztech_orders'); if (savedOrders) orders = JSON.parse(savedOrders);
+            const savedCart = localStorage.getItem('gruztech_cart'); if (savedCart) cart = JSON.parse(savedCart);
+            const savedEmployees = localStorage.getItem('gruztech_employees'); if (savedEmployees) employees = JSON.parse(savedEmployees);
+            const savedUser = localStorage.getItem('gruztech_currentUser'); if (savedUser) currentUser = JSON.parse(savedUser);
+            const rememberUser = localStorage.getItem('gruztech_remember');
+            if (rememberUser && !currentUser) {
+                const user = users.find(u => u.username === rememberUser && !u.blocked);
+                if (user) currentUser = user;
+            }
+            syncBusyFromOrders();
+            updateCartCounter();
+        }
+
+        function updateCartCounter() {
+            const badge = document.getElementById('cartCountBadge');
+            if (badge) {
+                const count = cart.length;
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
+            const section = document.getElementById(pageId);
+            if (section) section.classList.add('active-section');
+            if (pageId === 'catalog') { renderCatalog(); renderBusyCalendar(); }
+            if (pageId === 'cart') renderCart();
+            if (pageId === 'profile') renderProfile();
+            if (pageId === 'admin' && currentUser?.role === 'admin') renderAdminPanel();
+            if (pageId === 'about' && !mapInitialized) initMap();
+        }
+
+        function initMap() {
+            if (typeof ymaps !== 'undefined' && !mapInitialized) {
+                ymaps.ready(function() {
+                    var myMap = new ymaps.Map("map", {
+                        center: [56.1518, 101.6339],
+                        zoom: 12,
+                        controls: ['zoomControl', 'fullscreenControl']
+                    });
+                    var placemark = new ymaps.Placemark([56.1518, 101.6339], {
+                        hintContent: 'ГрузТех',
+                        balloonContent: 'г. Братск, Дмитровское шоссе 100'
+                    });
+                    myMap.geoObjects.add(placemark);
+                    mapInitialized = true;
+                });
+            }
+        }
+
+        function renderBusyCalendar() {
+            const container = document.getElementById('busyCalendarContainer');
+            if (!container) return;
+            
+            const bookings = new Map();
+            orders.forEach(order => {
+                if (order.status === 'Новый' || order.status === 'В обработке') {
+                    const date = order.workDateTime?.split(' ')[0];
+                    if (date) {
+                        if (!bookings.has(date)) bookings.set(date, []);
+                        order.items.forEach(item => {
+                            bookings.get(date).push(item.name);
+                        });
+                    }
+                }
+            });
+            
+            if (bookings.size === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:20px;">Нет запланированных аренд</p>';
+                return;
+            }
+            
+            let html = '<table class="calendar-table"><thead><tr><th>Дата</th><th>Занятая техника</th><tr></thead><tbody>';
+            const sortedDates = Array.from(bookings.keys()).sort();
+            for (let date of sortedDates) {
+                const techList = [...new Set(bookings.get(date))];
+                html += `<tr><td><strong>${date}</strong></td><td>${techList.join(', ') || '—'}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderCatalog() {
+            const container = document.getElementById('catalogContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            items.forEach(item => {
+                const available = item.totalUnits - item.busyUnits;
+                const card = document.createElement('div');
+                card.className = 'product-item';
+                card.innerHTML = `
+                    <div class="product-emoji">${item.emoji}</div>
+                    <div class="product-name">${item.name}</div>
+                    <div class="product-desc">${item.desc}</div>
+                    <div class="product-price">${item.pricePerHour} ₽/час</div>
+                    <div>Доступно: ${available} из ${item.totalUnits}</div>
+                    <label>Дата работ:</label>
+                    <input type="date" class="date-input" id="date-${item.id}" min="${new Date().toISOString().split('T')[0]}">
+                    <label>Время начала:</label>
+                    <input type="time" class="time-input" id="time-${item.id}" value="09:00">
+                    <button class="btn-primary add-to-cart" data-id="${item.id}" ${available <= 0 ? 'disabled style="opacity:0.5;"' : ''}><i class="fas fa-plus-circle"></i> В заявку</button>
+                `;
+                container.appendChild(card);
+            });
+            
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = +btn.dataset.id;
+                    const item = items.find(i => i.id === id);
+                    const dateInput = document.getElementById(`date-${id}`);
+                    const timeInput = document.getElementById(`time-${id}`);
+                    const selectedDate = dateInput.value;
+                    const selectedTime = timeInput.value;
+                    if (!selectedDate) { showModal('Пожалуйста, выберите дату', true); return; }
+                    if (!selectedTime) { showModal('Пожалуйста, выберите время', true); return; }
+                    
+                    const available = item.totalUnits - item.busyUnits;
+                    if (available <= 0) { showModal(`Все ${item.name} заняты`, true); return; }
+                    
+                    const dateTime = `${selectedDate} ${selectedTime}`;
+                    const existing = cart.find(c => c.id === id && c.dateTime === dateTime);
+                    if (existing) existing.hours += 2;
+                    else cart.push({ id, name: item.name, pricePerHour: item.pricePerHour, hours: 2, dateTime, date: selectedDate, time: selectedTime });
+                    saveAll();
+                    renderCart();
+                    showModal(`✅ ${item.name} добавлен на ${selectedDate} в ${selectedTime}`);
+                });
+            });
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItemsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            let totalHours = 0, totalCost = 0;
+            cart.forEach(item => {
+                totalHours += item.hours;
+                totalCost += item.pricePerHour * item.hours;
+                const div = document.createElement('div');
+                div.className = 'cart-item-card';
+                div.innerHTML = `
+                    <div><h4>${item.name}</h4><p>${item.pricePerHour} ₽/час | Дата: ${item.date} ${item.time}</p></div>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <div class="hours-control"><button class="dec-hours" data-id="${item.id}" data-datetime="${item.dateTime}">−</button><span>${item.hours} ч</span><button class="inc-hours" data-id="${item.id}" data-datetime="${item.dateTime}">+</button></div>
+                        <div><strong>${item.pricePerHour * item.hours} ₽</strong></div>
+                        <button class="btn-danger remove-item" data-id="${item.id}" data-datetime="${item.dateTime}"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            document.querySelectorAll('.dec-hours').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = +btn.dataset.id;
+                    const dt = btn.dataset.datetime;
+                    const item = cart.find(c => c.id === id && c.dateTime === dt);
+                    if (item && item.hours > 2) item.hours -= 1;
+                    else if (item && item.hours === 2) showModal('Минимальный заказ — 2 часа', true);
+                    saveAll(); renderCart();
+                });
+            });
+            document.querySelectorAll('.inc-hours').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = +btn.dataset.id;
+                    const dt = btn.dataset.datetime;
+                    const item = cart.find(c => c.id === id && c.dateTime === dt);
+                    if (item) item.hours += 1;
+                    saveAll(); renderCart();
+                });
+            });
+            document.querySelectorAll('.remove-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = +btn.dataset.id;
+                    const dt = btn.dataset.datetime;
+                    cart = cart.filter(c => !(c.id === id && c.dateTime === dt));
+                    saveAll(); renderCart();
+                });
+            });
+            
+            if (cart.length === 0) container.innerHTML = '<p style="text-align:center; padding:40px;">Корзина пуста</p>';
+            document.getElementById('totalHours').textContent = totalHours;
+            document.getElementById('cartTotal').textContent = totalCost + ' ₽';
+            updateCartCounter();
+        }
+
+        function renderProfile() {
+            if (!currentUser) return;
+            document.getElementById('profileDetails').innerHTML = `
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-light);"><strong>Имя:</strong> ${currentUser.name}</div>
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-light);"><strong>Email:</strong> ${currentUser.email}</div>
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-light);"><strong>Логин:</strong> ${currentUser.username}</div>
+                <div style="padding: 10px;"><strong>Роль:</strong> ${currentUser.role === 'admin' ? 'Администратор' : 'Клиент'}</div>
+            `;
+            const userOrders = orders.filter(o => o.userId === currentUser.id);
+            const historyDiv = document.getElementById('orderHistory');
+            if (userOrders.length === 0) {
+                historyDiv.innerHTML = '<p>У вас пока нет заказов</p>';
+            } else {
+                historyDiv.innerHTML = userOrders.map(o => `
+                    <div style="padding: 15px; border-bottom: 1px solid var(--border-light);">
+                        <div><strong>Заказ №${o.id}</strong> от ${o.orderDate}</div>
+                        <div>Дата/время работ: ${o.workDateTime}</div>
+                        <div>Техника: ${o.items.map(i => i.name).join(', ')}</div>
+                        <div>Сумма: ${o.totalCost} ₽</div>
+                        <div>Статус: ${o.status}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderAdminPanel() {
+            const container = document.getElementById('adminContent');
+            if (!container) return;
+            
+            const totalOrders = orders.length;
+            const totalRevenue = orders.reduce((sum, o) => sum + o.totalCost, 0);
+            const pendingOrders = orders.filter(o => o.status === 'Новый').length;
+            
+            let html = `
+                <div class="admin-stats">
+                    <div class="stat-card"><h3>📦 Всего заказов</h3><p style="font-size: 2rem;">${totalOrders}</p></div>
+                    <div class="stat-card"><h3>💰 Выручка</h3><p style="font-size: 2rem;">${totalRevenue.toLocaleString()} ₽</p></div>
+                    <div class="stat-card"><h3>⏳ Новых заказов</h3><p style="font-size: 2rem;">${pendingOrders}</p></div>
+                </div>
+                <h3>Информация о технике</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;">
+            `;
+            items.forEach(item => {
+                const available = item.totalUnits - item.busyUnits;
+                html += `
+                    <div class="stat-card" style="min-width: 180px;">
+                        <h4>${item.name}</h4>
+                        <p>Всего: ${item.totalUnits}</p>
+                        <p>Занято: ${item.busyUnits}</p>
+                        <p>Свободно: ${available}</p>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            
+            html += `<h3><i class="fas fa-users"></i> Управление сотрудниками</h3>
+            <button class="btn-primary" id="addEmployeeBtn" style="margin-bottom: 15px;"><i class="fas fa-plus"></i> Добавить сотрудника</button>
+            <table class="admin-table">
+                <thead><tr><th>ФИО</th><th>Должность</th><th>Телефон</th><th>Зарплата</th><th>Действия</th></tr></thead>
+                <tbody id="employeesTableBody">`;
+            employees.forEach(emp => {
+                html += `<tr>
+                    <td>${emp.fullname}</td>
+                    <td>${emp.position}</td>
+                    <td>${emp.phone}</td>
+                    <td>${emp.salary.toLocaleString()} ₽</td>
+                    <td><button class="btn-danger delete-employee" data-id="${emp.id}">Удалить</button></td>
+                </tr>`;
+            });
+            html += `</tbody>}</table>`;
+            
+            html += `<h3 style="margin-top: 30px;"><i class="fas fa-user-shield"></i> Управление пользователями</h3>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Имя</th><th>Логин</th><th>Email</th><th>Роль</th><th>Статус</th><th>Действия</th></tr></thead>
+                <tbody id="usersTableBody">`;
+            users.forEach(user => {
+                html += `<tr>
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role === 'admin' ? 'Админ' : 'Пользователь'}</td>
+                    <td>${user.blocked ? '<span style="color:var(--danger);">Заблокирован</span>' : '<span style="color:var(--success);">Активен</span>'}</td>
+                    <td>
+                        ${user.role !== 'admin' ? `<button class="block-user" data-id="${user.id}">${user.blocked ? 'Разблокировать' : 'Заблокировать'}</button>
+                        <button class="btn-danger delete-user" data-id="${user.id}">Удалить</button>` : '—'}
+                    </td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+            
+            html += `<h3 style="margin-top: 30px;">Управление заказами</h3>`;
+            if (orders.length === 0) {
+                html += '<p>Нет заказов</p>';
+            } else {
+                html += '<div style="overflow-x: auto;"><table class="admin-table"><tr><th>ID</th><th>Клиент</th><th>Техника</th><th>Сумма</th><th>Статус</th><th>Действия</th></tr>';
+                orders.forEach(o => {
+                    html += `<tr>
+                        <td>${o.id}</td>
+                        <td>${o.userName}</td>
+                        <td>${o.items.map(i => i.name).join(', ')}</td>
+                        <td>${o.totalCost} ₽</td>
+                        <td><select class="order-status" data-id="${o.id}" style="background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 20px; padding: 5px 10px;"><option ${o.status === 'Новый' ? 'selected' : ''}>Новый</option><option ${o.status === 'В обработке' ? 'selected' : ''}>В обработке</option><option ${o.status === 'Выполнен' ? 'selected' : ''}>Выполнен</option><option ${o.status === 'Отменён' ? 'selected' : ''}>Отменён</option></select></td>
+                        <td><button class="btn-danger delete-order" data-id="${o.id}">Удалить</button></td>
+                    </tr>`;
+                });
+                html += '</table></div>';
+            }
+            container.innerHTML = html;
+            
+            document.getElementById('addEmployeeBtn')?.addEventListener('click', () => {
+                showEmployeeModal((data) => {
+                    const newId = employees.length + 1;
+                    employees.push({ id: newId, ...data });
+                    saveAll();
+                    renderAdminPanel();
+                    showModal('Сотрудник успешно добавлен');
+                });
+            });
+            
+            document.querySelectorAll('.delete-employee').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = +btn.dataset.id;
+                    employees = employees.filter(e => e.id !== id);
+                    saveAll();
+                    renderAdminPanel();
+                    showModal('Сотрудник удален');
+                });
+            });
+            
+            document.querySelectorAll('.block-user').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = +btn.dataset.id;
+                    const user = users.find(u => u.id === id);
+                    if (user) {
+                        user.blocked = !user.blocked;
+                        saveAll();
+                        if (currentUser && currentUser.id === id && user.blocked) {
+                            logout();
+                        }
+                        renderAdminPanel();
+                        showModal(user.blocked ? 'Пользователь заблокирован' : 'Пользователь разблокирован');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = +btn.dataset.id;
+                    if (currentUser && currentUser.id === id) {
+                        showModal('Нельзя удалить самого себя', true);
+                        return;
+                    }
+                    users = users.filter(u => u.id !== id);
+                    saveAll();
+                    renderAdminPanel();
+                    showModal('Пользователь удален');
+                });
+            });
+            
+            document.querySelectorAll('.order-status').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const orderId = +select.dataset.id;
+                    const order = orders.find(o => o.id === orderId);
+                    if (order) order.status = select.value;
+                    saveAll();
+                    renderAdminPanel();
+                    if (currentUser) renderProfile();
+                    renderBusyCalendar();
+                });
+            });
+            
+            document.querySelectorAll('.delete-order').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const orderId = +btn.dataset.id;
+                    orders = orders.filter(o => o.id !== orderId);
+                    saveAll();
+                    renderAdminPanel();
+                    if (currentUser) renderProfile();
+                    renderBusyCalendar();
+                });
+            });
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const remember = document.getElementById('rememberMeCheckbox')?.checked || false;
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                if (user.blocked) {
+                    showModal('Ваш аккаунт заблокирован', true);
+                    return;
+                }
+                currentUser = user;
+                localStorage.setItem('gruztech_currentUser', JSON.stringify(user));
+                if (remember) {
+                    localStorage.setItem('gruztech_remember', user.username);
+                } else {
+                    localStorage.removeItem('gruztech_remember');
+                }
+                updateUIForUser();
+                showPage('home');
+                showModal(`Добро пожаловать, ${user.name}!`);
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
+            } else {
+                showModal('Неверный логин или пароль', true);
+            }
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('regName').value;
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const pwd = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirmPassword').value;
+            
+            if (!name || !username || !email || !pwd) {
+                showModal('Заполните все поля', true);
+                return;
+            }
+            if (pwd !== confirm) {
+                showModal('Пароли не совпадают', true);
+                return;
+            }
+            if (users.find(u => u.username === username)) {
+                showModal('Логин занят', true);
+                return;
+            }
+            const newUser = { id: users.length + 1, name, username, password: pwd, email, role: 'user', blocked: false };
+            users.push(newUser);
+            saveAll();
+            showModal('Регистрация успешна! Теперь вы можете войти.');
+            setTimeout(() => showPage('login'), 1500);
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('gruztech_currentUser');
+            updateUIForUser();
+            showPage('home');
+            showModal('Вы вышли из системы');
+        }
+
+        function updateUIForUser() {
+            const isLogged = !!currentUser;
+            const isAdmin = currentUser?.role === 'admin';
+            document.getElementById('loginBtn').style.display = isLogged ? 'none' : 'inline-flex';
+            document.getElementById('registerBtn').style.display = isLogged ? 'none' : 'inline-flex';
+            document.getElementById('profileBtn').style.display = isLogged ? 'inline-flex' : 'none';
+            document.getElementById('logoutBtn').style.display = isLogged ? 'inline-flex' : 'none';
+            document.getElementById('adminBtn').style.display = isAdmin ? 'inline-flex' : 'none';
+            
+            const mobileLogin = document.getElementById('mobileLoginBtn');
+            const mobileRegister = document.getElementById('mobileRegisterBtn');
+            const mobileProfile = document.getElementById('mobileProfileBtn');
+            const mobileLogout = document.getElementById('mobileLogoutBtn');
+            const mobileAdmin = document.getElementById('mobileAdminBtn');
+            if (mobileLogin) mobileLogin.style.display = isLogged ? 'none' : 'block';
+            if (mobileRegister) mobileRegister.style.display = isLogged ? 'none' : 'block';
+            if (mobileProfile) mobileProfile.style.display = isLogged ? 'block' : 'none';
+            if (mobileLogout) mobileLogout.style.display = isLogged ? 'block' : 'none';
+            if (mobileAdmin) mobileAdmin.style.display = isAdmin ? 'block' : 'none';
+        }
+
+        document.getElementById('doLoginBtn')?.addEventListener('click', handleLogin);
+        document.getElementById('doRegisterBtn')?.addEventListener('click', handleRegister);
+        document.getElementById('goToRegister')?.addEventListener('click', (e) => { e.preventDefault(); showPage('register'); });
+        document.getElementById('goToLogin')?.addEventListener('click', (e) => { e.preventDefault(); showPage('login'); });
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        document.getElementById('mobileLogoutBtn')?.addEventListener('click', logout);
+        document.getElementById('logoHomeBtn')?.addEventListener('click', () => showPage('home'));
+        
+        document.getElementById('checkoutBtn')?.addEventListener('click', () => {
+            if (!cart.length) { showModal('Корзина пуста', true); return; }
+            if (!currentUser) { showModal('Войдите в систему, чтобы оформить заказ', true); showPage('login'); return; }
+            const newOrder = {
+                id: orders.length + 1,
+                userId: currentUser.id,
+                userName: currentUser.name,
+                items: cart.map(i => ({ id: i.id, name: i.name, hours: i.hours })),
+                totalHours: cart.reduce((s, i) => s + i.hours, 0),
+                totalCost: cart.reduce((s, i) => s + i.pricePerHour * i.hours, 0),
+                orderDate: new Date().toLocaleDateString('ru-RU'),
+                workDateTime: cart[0]?.dateTime,
+                status: 'Новый'
+            };
+            orders.push(newOrder);
+            saveAll();
+            cart = [];
+            saveAll();
+            renderCart();
+            showModal('✅ Заказ оформлен! Мы свяжемся с вами для уточнения деталей');
+            renderBusyCalendar();
+        });
+
+        document.querySelectorAll('[data-page]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const page = btn.dataset.page;
+                if (page) showPage(page);
+            });
+        });
+        
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        mobileMenuBtn?.addEventListener('click', () => { mobileDrawer.classList.add('open'); drawerOverlay.classList.add('open'); });
+        const closeDrawer = () => { mobileDrawer.classList.remove('open'); drawerOverlay.classList.remove('open'); };
+        drawerOverlay?.addEventListener('click', closeDrawer);
+        document.querySelectorAll('.mobile-drawer .nav-btn').forEach(btn => btn.addEventListener('click', closeDrawer));
+        
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle?.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            themeToggle.innerHTML = document.body.classList.contains('dark-theme') ? '<i class="fas fa-sun"></i> Тема' : '<i class="fas fa-moon"></i> Тема';
+        });
+        
+        const accessibilityToggle = document.getElementById('accessibilityToggle');
+        accessibilityToggle?.addEventListener('click', () => document.body.classList.toggle('accessible-mode'));
+
+        loadData();
+        updateUIForUser();
+        renderCatalog();
+        renderCart();
+        showPage('home');
+    </script>
+</body>
+</html>
